@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A1.2 Sprechtraining - Meine Wohnung (İnteraktif)</title>
+    <style>
+        /* GENEL STİLLER */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; color: #333; }
+        .container { max-width: 1000px; margin: 20px auto; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 15px; overflow: hidden; }
+        .header { background-color: #007bff; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header p { margin: 5px 0 0 0; font-size: 1.1em; opacity: 0.9; }
+
+        /* ZAMANLAYICI STİLİ */
+        .timer-container { 
+            background-color: #dc3545; 
+            color: white; 
+            padding: 15px; 
+            text-align: center; 
+            font-size: 1.5em; 
+            font-weight: bold; 
+            border-bottom: 5px solid #bd2130;
+            cursor: pointer;
+        }
+        #countdown { font-size: 1.8em; display: block; margin-top: 5px; }
+
+        /* TABS VE İÇERİK YAPISI */
+        .tab-menu { 
+            display: flex; 
+            flex-wrap: wrap; 
+            background-color: #e9ecef; 
+            border-bottom: 2px solid #007bff; 
+            padding: 5px 10px;
+        }
+        .tab-button {
+            flex: 0 0 auto; 
+            max-width: 150px;
+            background-color: transparent;
+            border: none;
+            padding: 12px 8px;
+            cursor: pointer;
+            font-size: 0.85em; 
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+            margin: 0 2px;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 -3px 0 0 #0056b3 inset;
+        }
+        .tab-content { padding: 25px; min-height: 600px; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        
+        /* GÖRSEL STİLLERİ */
+        .slide-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* İNTERAKTİF ALAN STİLLERİ */
+        .interactive-area {
+            margin-top: 25px;
+            padding: 20px;
+            border: 2px dashed #007bff;
+            background-color: #e6f7ff;
+            border-radius: 10px;
+        }
+        .interactive-area h3 {
+            color: #0056b3;
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .input-group input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 80%; }
+        .check-button { 
+            background-color: #28a745; 
+            color: white; 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .result-message { margin-top: 10px; font-weight: bold; }
+
+        /* Tanışma kartları stili (önceki kodla aynı) */
+        #intro-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
+        .question-card { 
+            background-color: #f8f9fa; 
+            border-left: 5px solid #28a745; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        .card-number { color: #28a745; font-weight: bold; margin-right: 10px; }
+
+        /* MOBİL UYUM */
+        @media (max-width: 768px) {
+            .container { margin: 0; border-radius: 0; box-shadow: none; }
+            .tab-button { font-size: 0.65em; padding: 10px 3px; max-width: 100px; }
+            .interactive-area { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header">
+        <h1>A1.2 SPRECHTRAINING: Meine Wohnung 🇩🇪</h1>
+        <p>Görsel Akış | Lektion 35</p>
+    </div>
+
+    <div id="timer" class="timer-container" onclick="startTimer()">
+        DERS SÜRESİ: <span id="countdown">BAŞLATMAK İÇİN TIKLAYIN</span>
+    </div>
+
+    <div style="background-color: #ffc107; padding: 15px; text-align: center; font-weight: bold; margin-bottom: 20px; border: 2px solid #e0a800;">
+        AKTİF DERS BAĞLANTISI: <a id="zoomLinkDisplay" href="[BURAYA KULLANDIĞINIZ VİDEO LİNKİNİ YAPIŞTIRIN]" target="_blank" 
+        style="color: #6c757d; text-decoration: none; font-size: 1.1em;">
+        ZOOM/MEET LİNKİNİZ BURADA
+        </a>
+    </div>
+
+    <div class="tab-menu" id="tabMenu">
+        <button class="tab-button active" onclick="openTab(event, 'Aufwaermen')">1. Tanışma</button>
+        
+        <button class="tab-button" onclick="openTab(event, 'Slide1')">S.1 Kapak</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide2')">S.2 Lernziele</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide3')">S.3 Ev Tipleri</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide4')">S.4 Social Media</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide5')">S.5 Zimmer</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide6')">S.6 Verbinde</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide7')">S.7 Komposita Regel</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide8')">S.8 Welche Zimmer?</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide9')">S.9 Möbel</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide10')">S.10 Akzent</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide11')">S.11 Komposita Bilden</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide12')">S.12 Wo machst du?</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide13')">S.13 Küchengeräte</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide14')">S.14 Ordne</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide15')">S.15 Fragebogen</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide16')">S.16 Komp. (Tekrar)</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide17')">S.17 Bildraten</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide18')">S.18 Mein/Meine</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide19')">S.19 Katka zeigt</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide20')">S.20 Schön/Gerne</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide21')">S.21 Possessiv (T)</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide22')">S.22 Wie ist dein...?</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide23')">S.23 Sein/Ihr</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide24')">S.24 Sein/Ihr (Alışt.)</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide25')">S.25 Possessiv Plural</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide26')">S.26 Sorular</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide27')">S.27 Plural Alışt.</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide28')">S.28 Tekrar</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide29')">S.29 Wer hat was?</button>
+        <button class="tab-button" onclick="openTab(event, 'Slide30')">S.30 Son</button>
+    </div>
+
+    <div class="tab-content">
+
+        <div id="Aufwaermen" class="content-section active">
+            <h2>🗣️ 1. Tanışma ve Isınma Soruları (Aufwärmen)</h2>
+            <p>Öğrencinizle konuşma pratiği yaparken kullanabileceğiniz 20 temel soru kartı.</p>
+            
+            <div id="intro-cards">
+                <div class="question-card"><span class="card-number">1.</span> Wie heißen Sie / Wie heißt du?</div>
+                <div class="question-card"><span class="card-number">2.</span> Woher kommen Sie / kommst du?</div>
+                <div class="question-card"><span class="card-number">3.</span> Wie alt sind Sie / bist du?</div>
+                <div class="question-card"><span class="card-number">4.</span> Was sind Sie von Beruf / Was bist du von Beruf?</div>
+                <div class="question-card"><span class="card-number">5.</span> Wo arbeiten Sie / arbeitest du?</div>
+                <div class="question-card"><span class="card-number">6.</span> Was sind Ihre Hobbys / Was sind deine Hobbys?</div>
+                <div class="question-card"><span class="card-number">7.</span> Welche Sprachen sprechen Sie / sprichst du?</div>
+                <div class="question-card"><span class="card-number">8.</span> Haben Sie Geschwister / Hast du Geschwister?</div>
+                <div class="question-card"><span class="card-number">9.</span> Wie ist Ihr Familienstand / Wie ist dein Familienstand?</div>
+                <div class="question-card"><span class="card-number">10.</span> Haben Sie Kinder / Hast du Kinder?</div>
+                <div class="question-card"><span class="card-number">11.</span> Wie lange lernen Sie schon Deutsch / lernst du schon Deutsch?</div>
+                <div class="question-card"><span class="card-number">12.</span> Warum lernen Sie Deutsch / lernst du Deutsch?</div>
+                <div class="question-card"><span class="card-number">13.</span> Was machen Sie am Wochenende / machst du am Wochenende?</div>
+                <div class="question-card"><span class="card-number">14.</span> Was essen Sie gern / isst du gern?</div>
+                <div class="question-card"><span class="card-number">15.</span> Haben Sie Haustiere / Hast du Haustiere?</div>
+                <div class="question-card"><span class="card-number">16.</span> Wie ist das Wetter heute?</div>
+                <div class="question-card"><span class="card-number">17.</span> Wann haben Sie Geburtstag / hast du Geburtstag?</div>
+                <div class="question-card"><span class="card-number">18.</span> Sind Sie verheiratet / Bist du verheiratet?</div>
+                <div class="question-card"><span class="card-number">19.</span> Haben Sie einen Garten / Hast du einen Garten?</div>
+                <div class="question-card"><span class="card-number">20.</span> Wie ist Ihre Telefonnummer / Wie ist deine Telefonnummer?</div>
+            </div>
+        </div>
+
+        <div id="Slide1" class="content-section">
+            <img src="1.jpg" alt="Slayt 1 Kapak" class="slide-image">
+            <div class="interactive-area">
+                <h3>📌 Kısa Giriş: Lektion 35</h3>
+                <p>Bu dersimizde ev ve ev eşyalarını tanıtmayı, Komposita (birleşik kelime) kurallarını ve iyelik zamirlerini konuşacağız.</p>
+            </div>
+        </div>
+
+        <div id="Slide2" class="content-section">
+            <img src="2.jpg" alt="Slayt 2 Lernziele" class="slide-image">
+            <div class="interactive-area">
+                <h3>🗣️ Hazırlık Sorusu: Neden bu konu önemli?</h3>
+                <p>Öğrencinize sorun: **"Ich kann mein Zuhause beschreiben."** Bu neden önemli? Almanya'da ev ararken (Wohnungssuche) hangi kelimeler gereklidir?</p>
+            </div>
+        </div>
+        
+        <div id="Slide3" class="content-section">
+            <h2>🏠 Ev Tipleri ve Konuşma (Wo wohnst du?)</h2>
+            <img src="3.jpg" alt="Slayt 3 Ev Tipleri" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Pratik: Wo wohnst du?</h3>
+                <p>Öğrencinizden, slayttaki kelimeleri kullanarak kendi evini tanımlamasını isteyin.</p>
+                <div class="input-group">
+                    <label for="wohnenInput">Cevap (Örnek): Ich wohne in einem...</label>
+                    <input type="text" id="wohnenInput" placeholder="Einfamilienhaus / Hochhaus / Altbau">
+                </div>
+            </div>
+        </div>
+
+        <div id="Slide4" class="content-section">
+            <h2>📱 Patka & Katka: Die neue Wohnung</h2>
+            <img src="4.jpg" alt="Slayt 4 Social Media" class="slide-image">
+            <div class="interactive-area">
+                <h3>✅ Anlama Kontrolü</h3>
+                <p>Slayttaki yorumlara göre Kamila'nın banyoda gördüğü iki eşya nedir?</p>
+                <div class="input-group">
+                    <label for="bad1">Eşya 1:</label>
+                    <input type="text" id="bad1" placeholder="Du_che">
+                </div>
+                <div class="input-group">
+                    <label for="bad2">Eşya 2:</label>
+                    <input type="text" id="bad2" placeholder="Bade____ne">
+                </div>
+            </div>
+        </div>
+
+        <div id="Slide5" class="content-section">
+            <h2>🛋️ Odalar (Zimmer) Türetme Alıştırması</h2>
+            <img src="5.jpg" alt="Slayt 5 Zimmer" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Fiilden İsim Türetme</h3>
+                <p>Aşağıdaki fiillerden oda isimlerini türetin (Komposita).</p>
+                <div class="input-group"><label>schlafen → </label><input type="text" placeholder="das Schlafzimmer"></div>
+                <div class="input-group"><label>baden → </label><input type="text" placeholder="das Badezimmer"></div>
+                <div class="input-group"><label>kochen → </label><input type="text" placeholder="die Küche"></div>
+            </div>
+        </div>
+        
+        <div id="Slide6" class="content-section">
+            <h2>🔗 Eşleştirme Pratiği</h2>
+            <img src="6.jpg" alt="Slayt 6 Verbinde" class="slide-image">
+            <div class="interactive-area">
+                <h3>🤔 İki Parçayı Birleştirme</h3>
+                <p>Öğrencinizden slayttaki 1'den 5'e kadar olan cümle başlangıçlarını (1. Wohnst du in einem Haus oder...) doğru sonlarla eşleştirmesini isteyin.</p>
+            </div>
+        </div>
+
+        <div id="Slide7" class="content-section">
+            <h2>🔗 Komposita Kuralı: Artikel</h2>
+            <img src="7.jpg" alt="Slayt 7 Komposita Regel" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Kuralı Uygulama</h3>
+                <p>Aşağıdaki birleşik kelimelerin artikelini (der, die, das) söyleyin:</p>
+                <div class="input-group"><label>der Tisch + das Zimmer → </label><input type="text" placeholder="das T__zimmer"></div>
+                <div class="input-group"><label>die Tür + der Schlüssel → </label><input type="text" placeholder="der T___schlüssel"></div>
+            </div>
+        </div>
+
+        <div id="Slide8" class="content-section">
+            <h2>🗣️ Konuşma Pratiği: Hangi Odalar?</h2>
+            <img src="8.jpg" alt="Slayt 8 Welche Zimmer?" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Pratik: Mein Zuhause</h3>
+                <p>Öğrencinizden, slayttaki fotoğrafı inceleyerek, kendi evinde hangi odaların olduğunu ve en sevdiği odayı (Lieblingszimmer) anlatmasını isteyin.</p>
+            </div>
+        </div>
+        
+        <div id="Slide9" class="content-section">
+            <h2>🪑 Mobilya (Möbel) Eşleştirme</h2>
+            <img src="9.jpg" alt="Slayt 9 Möbel" class="slide-image">
+            <div class="interactive-area">
+                <h3>✅ Kelime Kontrolü</h3>
+                <p>Slayttaki görsellere bakarak doğru Almanca kelimeyi söyleyin (der Schrank, der Tisch, das Sofa, das Bett, der Stuhl, das Regal).</p>
+            </div>
+        </div>
+
+        <div id="Slide10" class="content-section">
+            <h2>🔊 Komposita: Vurgu (Wortakzent)</h2>
+            <img src="10.jpg" alt="Slayt 10 Akzent" class="slide-image">
+            <div class="interactive-area">
+                <h3>🎤 Telaffuz Pratiği</h3>
+                <p>Öğrencinizden bu kelimeleri tekrar etmesini isteyin ve vurgunun genellikle ilk hecede olduğunu hatırlatın (Örn: **Wohn**zimmer, **Bade**wanne).</p>
+            </div>
+        </div>
+
+        <div id="Slide11" class="content-section">
+            <h2>🔗 Komposita Oluşturma Alıştırması</h2>
+            <img src="11.jpg" alt="Slayt 11 Komposita Bilden" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Yazılı Alıştırma</h3>
+                <p>Slayttaki görsellerden yararlanarak Komposita kelimeleri türetin.</p>
+                <div class="input-group"><label>Wohn + Zimmer = </label><input type="text" placeholder="das Wohnzimmer"></div>
+                <div class="input-group"><label>Küche + Schrank = </label><input type="text" placeholder="der Küchenschrank"></div>
+            </div>
+        </div>
+
+        <div id="Slide12" class="content-section">
+            <h2>🔄 Aktivite Tekrarı: Was machst du wo?</h2>
+            <img src="12.jpg" alt="Slayt 12 Wo machst du?" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Konuşma Oyunu</h3>
+                <p>Bir aktivite söyleyin, öğrenci o aktivitenin yapıldığı odayı söylesin (Örn: **kochen** → **die Küche**).</p>
+            </div>
+        </div>
+
+        <div id="Slide13" class="content-section">
+            <h2>🔪 Mutfak Aletleri (Küchengeräte)</h2>
+            <img src="13.jpg" alt="Slayt 13 Küchengeräte" class="slide-image">
+            <div class="interactive-area">
+                <h3>✅ Eşleştirme</h3>
+                <p>Slayttaki numaralı aletleri (1'den 6'ya kadar) Almanca adlarıyla eşleştirin (der Herd, der Kühlschrank, die Spüle, vb.).</p>
+            </div>
+        </div>
+
+        <div id="Slide14" class="content-section">
+            <h2>🔤 Harfleri Sıralama (Ordne die Buchstaben)</h2>
+            <img src="14.jpg" alt="Slayt 14 Ordne" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Hızlı Çeviri</h3>
+                <p>Öğrencinizden slayttaki karışık harfleri hızlıca doğru Almanca kelimeye çevirmesini isteyin (Örn: BTET → Das Bett).</p>
+            </div>
+        </div>
+
+        <div id="Slide15" class="content-section">
+            <h2>❓ Soru Sorma Pratiği (Fragebogen)</h2>
+            <img src="15.jpg" alt="Slayt 15 Fragebogen" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Konuşma Pratiği</h3>
+                <p>Öğrencinizle karşılıklı olarak bu slayttaki soruları birbirinize sorun ve cevaplayın (Örn: Wohnst du in einem Haus? Hast du einen Balkon?).</p>
+            </div>
+        </div>
+
+        <div id="Slide16" class="content-section">
+            <h2>🔗 Komposita Tekrar Alıştırması</h2>
+            <img src="16.jpg" alt="Slayt 16 Komp. (Tekrar)" class="slide-image">
+            <div class="interactive-area">
+                <h3>✅ Tekrar Alıştırması</h3>
+                <p>Slayttaki alıştırmayı Komposita kuralını hatırlayarak tamamlayın.</p>
+            </div>
+        </div>
+
+        <div id="Slide17" class="content-section">
+            <h2>🖼️ Oda Tahmini (Welche Zimmer ist das?)</h2>
+            <img src="17.jpg" alt="Slayt 17 Bildraten" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Konuşma: Hangi Oda?</h3>
+                <p>Öğrencinizle slayttaki görsellerin hangi odaya ait olduğunu konuşun (Das ist das Schlafzimmer / das Wohnzimmer, vb.).</p>
+            </div>
+        </div>
+
+        <div id="Slide18" class="content-section">
+            <h2>👤 Mein veya Meine?</h2>
+            <img src="18.jpg" alt="Slayt 18 Mein/Meine" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 İyelik Zamiri (Singular)</h3>
+                <p>Slayttaki görsellere göre doğru iyelik zamirini (mein/meine) seçerek cümle kurun.</p>
+                <div class="input-group"><label>der Tisch → </label><input type="text" placeholder="Das ist M__ Tisch"></div>
+                <div class="input-group"><label>die Waschmaschine → </label><input type="text" placeholder="Das ist M___ Waschmaschine"></div>
+            </div>
+        </div>
+
+        <div id="Slide19" class="content-section">
+            <h2>📖 Katka Gösteriyor (Metin Okuma)</h2>
+            <img src="19.jpg" alt="Slayt 19 Katka zeigt" class="slide-image">
+            <div class="interactive-area">
+                <h3>🗣️ Okuma ve Anlama</h3>
+                <p>Slayttaki metni (Katka'nın konuşması) okuyun ve metnin altındaki 3 cümleyi tamamlayın.</p>
+            </div>
+        </div>
+
+        <div id="Slide20" class="content-section">
+            <h2>💬 Beğeni İfadeleri (Schön / Gerne)</h2>
+            <img src="20.jpg" alt="Slayt 20 Schön/Gerne" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Pratik: İfadeleri Kullanma</h3>
+                <p>Öğrencinizden bu ifadeleri kullanarak kendi evi/eşyaları hakkında iki farklı cümle kurmasını isteyin.</p>
+            </div>
+        </div>
+
+        <div id="Slide21" class="content-section">
+            <h2>👤 Possessivartikel Tablosu (Singular)</h2>
+            <img src="21.jpg" alt="Slayt 21 Possessiv (T)" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Tabloyu Tamamlama</h3>
+                <p>Öğrencinizle beraber bu slayttaki tabloyu tamamlayın (mein, dein, sein, ihr/ihre).</p>
+            </div>
+        </div>
+
+        <div id="Slide22" class="content-section">
+            <h2>❓ Wie ist dein(e)...? (Özellik Sorma)</h2>
+            <img src="22.jpg" alt="Slayt 22 Wie ist dein...?" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Konuşma Pratiği</h3>
+                <p>Öğrencinizden slayttaki 4 nesneyi seçerek (Waschmaschine, Balkon, Küche, Schlafzimmer) bu özelliklerden 4 tanesini kullanarak cümle kurmasını isteyin (Örn: Meine Küche ist klein und günstig).</p>
+            </div>
+        </div>
+
+        <div id="Slide23" class="content-section">
+            <h2>👤 Sein/Ihr Kuralı</h2>
+            <img src="23.jpg" alt="Slayt 23 Sein/Ihr" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Boşluk Doldurma</h3>
+                <p>Slayttaki şemaya bakarak (Katka: ihre Wohnung, Lukasz: seine Spielsachen) Frank ve Maria için örnek cümleler kurun.</p>
+            </div>
+        </div>
+
+        <div id="Slide24" class="content-section">
+            <h2>👤 Sein/Ihr Alıştırması</h2>
+            <img src="24.jpg" alt="Slayt 24 Sein/Ihr (Alışt.)" class="slide-image">
+            <div class="interactive-area">
+                <h3>✅ Doğru Cevabı Bulma</h3>
+                <p>Slayttaki 5 alıştırmayı yapınız. (Cinsiyet ve artikellere dikkat edin!)</p>
+            </div>
+        </div>
+
+        <div id="Slide25" class="content-section">
+            <h2>👤 Possessivartikel Tablosu (Plural)</h2>
+            <img src="25.jpg" alt="Slayt 25 Possessiv Plural" class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Tabloyu Tamamlama</h3>
+                <p>Slayttaki Plural (çoğul) iyelik zamirlerini tamamlayın (unser/unsere, euer/eure vb.).</p>
+            </div>
+        </div>
+
+        <div id="Slide26" class="content-section">
+            <h2>❓ Sorular ve Cevaplar</h2>
+            <img src="26.jpg" alt="Slayt 26 Sorular" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Pratik: Olumlu/Olumsuz Cevap</h3>
+                <p>Slayttaki soruları cevaplarken olumlu ve olumsuz (Nein, das ist nicht mein...) yanıtları kullanınız.</p>
+            </div>
+        </div>
+
+        <div id="Slide27" class="content-section">
+            <h2>👤 Plural İyelik Zamirleri Alıştırması</h2>
+            <img src="27.jpg" alt="Slayt 27 Plural Alışt." class="slide-image">
+            <div class="interactive-area">
+                <h3>📝 Cümle Kurma</h3>
+                <p>Slayttaki kişileri kullanarak doğru Plural Possessivartikel ile cümleleri tamamlayınız.</p>
+            </div>
+        </div>
+
+        <div id="Slide28" class="content-section">
+            <h2>🔄 Tekrar Soruları</h2>
+            <img src="28.jpg" alt="Slayt 28 Tekrar" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 Konuşma Pratiği</h3>
+                <p>Slayttaki kelimelerden rastgele seçim yaparak iyelik zamirlerini içeren sorular sorunuz (Örn: Hat deine Freundin ein modernes Auto?).</p>
+            </div>
+        </div>
+
+        <div id="Slide29" class="content-section">
+            <h2>🖼️ Wer hat was?</h2>
+            <img src="29.jpg" alt="Slayt 29 Wer hat was?" class="slide-image">
+            <div class="interactive-area">
+                <h3>💬 İyelik Cümleleri Kurma</h3>
+                <p>Slayttaki kişileri ve görselleri kullanarak iyelik cümleleri kurunuz (Örn: Robert hat eine Dusche. Das ist seine Dusche).</p>
+            </div>
+        </div>
+
+        <div id="Slide30" class="content-section">
+            <h2>🏁 Ders Sonu</h2>
+            <img src="30.jpg" alt="Slayt 30 Son" class="slide-image">
+            <div class="interactive-area">
+                <h3>👍 Kapanış ve Özet</h3>
+                <p>Öğrencinizle derste öğrendiğiniz 3 önemli kelimeyi ve 1 dilbilgisi kuralını tekrar ediniz.</p>
+            </div>
+        </div>
+        
+    </div> </div> <script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("content-section");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        if(evt) { 
+            evt.currentTarget.className += " active";
+        } else { 
+            document.querySelector('.tab-button').className += " active";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        openTab(null, 'Aufwaermen');
+    });
+
+    var totalSeconds = 50 * 60; 
+    var intervalId;
+
+    function formatTime(secs) {
+        var minutes = Math.floor(secs / 60);
+        var seconds = secs % 60;
+        return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    function updateTimer() {
+        if (totalSeconds <= 0) {
+            clearInterval(intervalId);
+            document.getElementById('countdown').innerHTML = 'SÜRE DOLDU!';
+            document.getElementById('timer').style.backgroundColor = '#6c757d';
+            return;
+        }
+        document.getElementById('countdown').innerHTML = formatTime(totalSeconds);
+        totalSeconds--;
+    }
+
+    function startTimer() {
+        if (intervalId) return;
+
+        document.getElementById('countdown').innerHTML = '50:00';
+        document.getElementById('timer').style.backgroundColor = '#28a745'; 
+        document.getElementById('timer').innerHTML = 'DEVAM EDİYOR: <span id="countdown">50:00</span>';
+        
+        totalSeconds = 50 * 60;
+        intervalId = setInterval(updateTimer, 1000);
+    }
+</script>
+
+</body>
+</html>
